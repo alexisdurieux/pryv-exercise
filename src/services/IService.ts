@@ -32,97 +32,82 @@ export class Service implements IService {
 
 
     public async get<T>(endpoint: string, params: Dictionary<any>): Promise<T | ErrorResponse> {
-        try {
-            const queryString = this.formatQueryString(params);
-            const options: RequestInit = {
-                headers: {
-                    ...this.AUTHORIZATION_HEADERS,
-                },
-                method: 'GET',
-            };
-            const fullEndpoint = `${this.BASE_ENDPOINT}/${endpoint}${queryString}`;
-            const res: Response = await fetch(fullEndpoint, options);
-            const data: any = await res.json();
-            if (this.okStatus(res.status)) {
-                return (data as T);
-            } else {
-                Logger.Err(`Error on request ${res.status} on endpoint ${fullEndpoint}`);
-                return (data as ErrorResponse);
-            }
-        } catch (error) {
-            throw new Error(error);
+        const queryString = this.formatQueryString(params);
+        const options: RequestInit = {
+            headers: {
+                ...this.AUTHORIZATION_HEADERS,
+            },
+            method: 'GET',
+        };
+        const fullEndpoint = `${this.BASE_ENDPOINT}/${endpoint}${queryString}`;
+        const res: Response = await fetch(fullEndpoint, options);
+        const data: any = await res.json();
+        if (this.okStatus(res.status)) {
+            return (data as T);
+        } else {
+            Logger.Err(`Error on request ${res.status} on endpoint ${fullEndpoint}`);
+            return (data as ErrorResponse);
         }
     }
 
     public async post<T>(endpoint: string, body: Dictionary<any>): Promise<T | ErrorResponse> {
-        try {
-            const stringifiedBody = JSON.stringify(body);
-            const options: RequestInit = {
-                headers: {
-                    ...this.AUTHORIZATION_HEADERS,
-                    'Content-Type': 'application/json',
-                },
-                body: stringifiedBody,
-                method: 'POST',
-            };
-            const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
-            const dataResponse: any = await res.json();
-            if (this.okStatus(res.status)) {
-                return (body as T);
-            } else {
-                Logger.Err(`Error on post request ${res.status} on endpoint ${endpoint}`);
-                return (dataResponse as ErrorResponse);
-            }
-        } catch (error) {
-            throw new Error(error);
+        const stringifiedBody = JSON.stringify(body);
+        const options: RequestInit = {
+            headers: {
+                ...this.AUTHORIZATION_HEADERS,
+                'Content-Type': 'application/json',
+            },
+            body: stringifiedBody,
+            method: 'POST',
+        };
+        const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
+        const dataResponse: any = await res.json();
+
+        if (this.okStatus(res.status)) {
+            return (dataResponse as T);
+        } else {
+            Logger.Err(`Error on post request ${res.status} on endpoint ${endpoint}`);
+            return (dataResponse as ErrorResponse);
         }
     }
 
     public async put<T>(endpoint: string, body: Dictionary<any>): Promise<T | ErrorResponse> {
-        try {
-            const stringifiedBody = JSON.stringify(body);
-            const options: RequestInit = {
-                headers: {
-                    ...this.AUTHORIZATION_HEADERS,
-                    'Content-Type': 'application/json',
-                },
-                body: stringifiedBody,
-                method: 'PUT',
-            };
-            const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
-            const dataResponse: any = await res.json();
-            if (this.okStatus(res.status)) {
-                return (body as T);
-            } else {
-                Logger.Err(`Error on put request ${res.status} on endpoint ${endpoint}`);
-                return (dataResponse as ErrorResponse);
-            }
-        } catch (error) {
-            throw new Error(error);
+        const stringifiedBody = JSON.stringify(body);
+        const options: RequestInit = {
+            headers: {
+                ...this.AUTHORIZATION_HEADERS,
+                'Content-Type': 'application/json',
+            },
+            body: stringifiedBody,
+            method: 'PUT',
+        };
+        const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
+        const dataResponse: any = await res.json();
+        if (this.okStatus(res.status)) {
+            return (dataResponse as T);
+        } else {
+            Logger.Err(`Error on put request ${res.status} on endpoint ${endpoint}`);
+            return (dataResponse as ErrorResponse);
         }
     }
 
     public async delete<T>(endpoint: string, body: Dictionary<any>) {
-        try {
-            const stringifiedBody = JSON.stringify(body);
-            const options: RequestInit = {
-                headers: {
-                    ...this.AUTHORIZATION_HEADERS,
-                    'Content-Type': 'application/json',
-                },
-                body: stringifiedBody,
-                method: 'DELETE',
-            };
-            const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
-            const dataResponse: any = await res.json();
-            if (this.okStatus(res.status)) {
-                return (body as T);
-            } else {
-                Logger.Err(`Error on delete request ${res.status} on endpoint ${endpoint}`);
-                return (dataResponse as ErrorResponse);
-            }
-        } catch (error) {
-            throw new Error(error);
+        const stringifiedBody = JSON.stringify(body);
+        const options: RequestInit = {
+            headers: {
+                ...this.AUTHORIZATION_HEADERS,
+                'Content-Type': 'application/json',
+            },
+            body: stringifiedBody,
+            method: 'DELETE',
+        };
+        const res: Response = await fetch(`${this.BASE_ENDPOINT}/${endpoint}`, options);
+        const dataResponse: any = await res.json();
+        if (this.okStatus(res.status)) {
+            return (dataResponse as T);
+        } else {
+            Logger.Err(`Error on delete request ${res.status} on endpoint ${endpoint}`);
+            return (dataResponse as ErrorResponse);
         }
     }
 

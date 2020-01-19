@@ -30,10 +30,10 @@ interface Attachment {
 
 export interface EventsResponse {
     meta: Meta;
-    streams: Event[];
+    events: Event[];
 }
 
 export interface EventResponse {
     meta: Meta;
-    streams: Event;
+    event: Event;
 }

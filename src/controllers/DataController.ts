@@ -8,13 +8,9 @@ import {
     EventResponse,
 } from '../models';
 import { Service } from '../services/IService';
-import { loggerModeArr } from '@overnightjs/logger/lib/constants';
-
 
 @Controller('data')
 export class DataController {
-    private readonly BASE_ENDPOINT: string = 'https://{USERNAME}.pryv.me/streams?auth={TOKEN}';
-
     @Post('')
     private async replicateStream(req: Request, res: Response) {
         try {
@@ -40,9 +36,9 @@ export class DataController {
             const backupStreams = streamsPromises[1] as StreamsResponse;
 
             if (backupStreams.streams.length === 0) {
-                return res.status(404).json({
-                    message: 'No backup streams. Impossible to create an event without a stream',
-                });
+                throw new Error(
+                    'No backup streams. Impossible to create an event without a stream',
+                );
             }
 
             const newEvent: Event = {

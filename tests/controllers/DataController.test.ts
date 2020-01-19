@@ -3,10 +3,11 @@ import 'mocha';
 import * as request from 'supertest';
 import app from '../../src/start';
 import * as nock from 'nock';
-import { Stream, Event } from '../../src/models';
+import { Stream, Event, EventResponse } from '../../src/models';
+import { Meta } from '../../src/models/Meta';
 
-const meta = {
-    apiVersion: 1.1,
+const meta: Meta = {
+    apiVersion: '1.1',
     serverTime: 1579450434.133,
     serial: '201906130',
 };
@@ -69,8 +70,6 @@ const backupStreams: Stream[] = [
 ];
 
 const eventContent = sourceStreams.concat(backupStreams);
-// tslint:disable-next-line:no-console
-console.log(eventContent);
 
 nock('https://sw-interview-source.pryv.me')
     .persist()
@@ -92,7 +91,7 @@ const mockEvent: Event = {
     streamId: 'a',
     type: 'exercice-1/streams',
     content: eventContent,
-  };
+};
 
 nock('https://sw-interview-backup.pryv.me')
     .persist()
@@ -122,7 +121,7 @@ describe('data', () => {
                 },
             })
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(200, mockEvent, done);
+            .expect(200, { meta, event: mockEvent }, done);
         });
 
         it('should fail with invalid credentials', (done) => {
