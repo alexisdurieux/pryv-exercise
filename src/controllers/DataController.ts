@@ -13,6 +13,10 @@ import { Service } from '../services/IService';
 export class DataController {
     @Post('')
     private async replicateStream(req: Request, res: Response) {
+        /*
+        To improve ideas:
+            - Make stronger validation and error handling with a library such as joi js
+        */
         try {
             const credentials: DuplicationCredentials = req.body;
 

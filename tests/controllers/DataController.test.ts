@@ -93,12 +93,23 @@ const mockEvent: Event = {
     content: eventContent,
 };
 
+const eventResponse = {
+    ...mockEvent,
+    time: 1579468218.201,
+    tags: [],
+    created: 1579468218.201,
+    createdBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+    modified: 1579468218.201,
+    modifiedBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+    id: 'ck5lilh0a00lt1gd3pwrxroyf',
+};
+
 nock('https://sw-interview-backup.pryv.me')
     .persist()
     .post('/events', JSON.stringify(mockEvent))
     .reply(201, {
         meta,
-        event: mockEvent,
+        event: eventResponse,
     });
 // Configure chai
 chai.should();
@@ -121,7 +132,7 @@ describe('data', () => {
                 },
             })
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(200, { meta, event: mockEvent }, done);
+            .expect(200, { meta, event: eventResponse }, done);
         });
 
         it('should fail with invalid credentials', (done) => {
