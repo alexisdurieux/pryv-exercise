@@ -2,7 +2,6 @@ import * as bodyParser from 'body-parser';
 import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
-import { Application } from 'express';
 import { Server as HttpServer } from 'http';
 
 class PryvServer extends Server {

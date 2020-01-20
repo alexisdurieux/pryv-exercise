@@ -31,6 +31,16 @@ const sourceStreams: Stream[] = [
                 id: 'b',
                 children: [],
             },
+            {
+                name: 'C',
+                parentId: 'a',
+                created: 1576492959.483,
+                createdBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+                modified: 1576492959.483,
+                modifiedBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+                id: 'c',
+                children: [],
+            },
         ],
     },
 ];
@@ -87,19 +97,77 @@ nock('https://sw-interview-backup.pryv.me')
         streams: backupStreams,
     });
 
-const mockEvent: Event = {
+const mockEventJoin: Event = {
     streamId: 'a',
     type: 'exercice-1/streams',
     content: eventContent,
 };
 
+const eventResponseJoin: EventResponse = {
+    meta,
+    event: {
+        ...mockEventJoin,
+        time: 1579468218.201,
+        tags: [],
+        created: 1579468218.201,
+        createdBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+        modified: 1579468218.201,
+        modifiedBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+        id: 'ck5lilh0a00lt1gd3pwrxroyf',
+    },
+};
+
+const mockEventIntersection: Event = {
+    streamId: 'a',
+    type: 'exercice-intersection',
+    content: [
+        {
+            name: 'A',
+            created: 1576492959.476,
+            createdBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+            modified: 1576492959.476,
+            modifiedBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+            id: 'a',
+            children: [
+                {
+                    name: 'C',
+                    parentId: 'a',
+                    created: 1576492959.483,
+                    createdBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+                    modified: 1576492959.483,
+                    modifiedBy: 'ck48ax1gl00c61gd3qnzrxu0j',
+                    id: 'c',
+                    children: [],
+                },
+            ],
+        },
+    ],
+};
+
+const eventResponseIntersection: EventResponse = {
+    meta,
+    event: {
+        ...mockEventIntersection,
+        time: 1579468218.201,
+        tags: [],
+        created: 1579468218.201,
+        createdBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+        modified: 1579468218.201,
+        modifiedBy: 'ck5h1b5mx00jg1fd3a0qj8wml',
+        id: 'ck5lilh0a00lt1gd3pwrxroyf',
+    },
+};
+
 nock('https://sw-interview-backup.pryv.me')
     .persist()
-    .post('/events', JSON.stringify(mockEvent))
-    .reply(201, {
-        meta,
-        event: mockEvent,
-    });
+    .post('/events', JSON.stringify(mockEventJoin))
+    .reply(201, eventResponseJoin);
+
+nock('https://sw-interview-backup.pryv.me')
+    .persist()
+    .post('/events', JSON.stringify(mockEventIntersection))
+    .reply(201, eventResponseIntersection);
+
 // Configure chai
 chai.should();
 
@@ -121,7 +189,7 @@ describe('data', () => {
                 },
             })
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(200, { meta, event: mockEvent }, done);
+            .expect(200, eventResponseJoin, done);
         });
 
         it('should fail with invalid credentials', (done) => {
@@ -134,6 +202,20 @@ describe('data', () => {
             .expect('Content-Type', 'application/json; charset=utf-8')
             .expect(400, { message: 'Error: Invalid credentials' }, done);
         });
+
+        it('should get the intersection properly', (done) => {
+            request(app).post('/data/intersection').send({
+                source: {
+                    username: 'sw-interview-source',
+                    token: 'ck5h1u3o200j21hd39ymop3vj',
+                },
+                backup: {
+                    username: 'sw-interview-backup',
+                    token: 'ck5h1b5mw00jf1fd3s6e0vhie',
+                },
+            })
+            .expect('Content-Type', 'application/json; charset=utf-8')
+            .expect(200, eventResponseIntersection, done);
+        });
     });
 });
-
