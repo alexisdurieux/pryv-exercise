@@ -9,6 +9,7 @@
       "target": "es6",
       "emitDecoratorMetadata": true,
       "moduleResolution": "node",
+      "esModuleInterop": true,
       "importHelpers": true,
       "types": [
         "node"

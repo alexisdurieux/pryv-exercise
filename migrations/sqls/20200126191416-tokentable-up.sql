@@ -1,0 +1,4 @@
+CREATE table tokens(
+    value VARCHAR(40) NOT NULL PRIMARY KEY,
+    created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

@@ -1,10 +1,11 @@
 import * as chai from 'chai';
 import 'mocha';
-import * as request from 'supertest';
 import app from '../../src/start';
-import * as nock from 'nock';
 import { Stream, Event, EventResponse } from '../../src/models';
 import { Meta } from '../../src/models/Meta';
+
+import request from 'supertest';
+import nock from 'nock';
 
 const meta: Meta = {
     apiVersion: '1.1',

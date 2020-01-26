@@ -1,0 +1,12 @@
+{
+    "defaultEnv": "local",
+    "dev": {
+      "driver": "sqlite3",
+      "filename": "./data.db"
+    },
+  
+    "local": {
+      "driver": "sqlite3",
+      "filename": ":memory:"
+    }
+  }

@@ -9,7 +9,7 @@ import {
     Stream,
 } from '../models';
 import { Service } from '../services/IService';
-// import { _ } from 'lodash';
+import * as _ from 'lodash';
 
 @Controller('data')
 export class DataController {

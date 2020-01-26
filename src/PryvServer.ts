@@ -3,6 +3,7 @@ import * as controllers from './controllers';
 import { Server } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { Application } from 'express';
+import { sqlite3 } from 'sqlite3';
 import { Server as HttpServer } from 'http';
 
 class PryvServer extends Server {
