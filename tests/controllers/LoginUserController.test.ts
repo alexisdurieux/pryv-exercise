@@ -16,9 +16,10 @@ describe('auth', () => {
     before(async () => {
         await setupDb();
     });
-    after((done) => {
+    after(async () => {
+        await Database.run('DROP Table tokens', {});
+        await Database.run('DROP Table users', {});
         app.close();
-        done();
     });
     describe('POST /login', () => {
         it('should not login correctly if no account', (done) => {
