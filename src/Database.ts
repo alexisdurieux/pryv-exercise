@@ -1,7 +1,7 @@
 import * as sqlite3 from 'sqlite3';
 
 class Database {
-    private static instance = new sqlite3.Database(':memory:');
+    private static instance = new sqlite3.Database(process.env.DB ? process.env.DB : ':memory:');
     public static getInstance = () => Database.instance;
 
     public static async run(q: string, params: any) {

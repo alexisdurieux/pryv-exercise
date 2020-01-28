@@ -4,10 +4,10 @@
   "description": "",
   "main": "build/start.js",
   "scripts": {
-    "start-dev": "nodemon --config \"nodemon.json\"/",
-    "test": "mocha -r ts-node/register tests/controllers/**/*.ts",
+    "start-dev": "DB=data.db nodemon --config \"nodemon.json\"/",
+    "test": "DB=:memory: mocha -r ts-node/register tests/controllers/**/*.ts",
     "build": "rm -rf ./build/ && tsc",
-    "start": "node build/start.js"
+    "start": "DB=data.db node build/start.js"
   },
   "author": "Alexis Durieux",
   "license": "ISC",
