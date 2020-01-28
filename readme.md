@@ -12,11 +12,3 @@
 
 ### Run tests
   * `npm run test`
-
-#### To do
-  * add a test for every route:
-    * create and get by id:
-      * POST a resource and get it (both POST and )
-    * create, get, update, get by id
-    * create, create and get all
-    * create, get, delete, get
