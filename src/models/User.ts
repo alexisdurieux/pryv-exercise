@@ -12,6 +12,4 @@ export interface User {
     username: string;
     password_digest: string;
     created_ts: number;
-    token?: string;
-    token_created_ts?: number;
 }

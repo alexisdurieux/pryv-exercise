@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { Controller, Post, Get, Delete, Put } from '@overnightjs/core';
+import { Request, Response, NextFunction } from 'express';
+import { Controller, Post, Get, Delete, Put, Middleware } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { LoginResource } from 'src/models/LoginResource';
 import Database from '../Database';
@@ -11,26 +11,40 @@ import { Token } from 'src/models/Token';
 import { Resource } from 'src/models/Resource';
 import { isNumber, isString } from 'util';
 import { request } from 'http';
+import { ErrorMessage } from '../ErrorMessage';
+
+async function checkAuthorization(authorization: string | undefined): Promise<boolean> {
+    const token = await Database.get<Token>('SELECT * from tokens where value = $token and created_ts >= Datetime(\'now\', \'-2 days\')', {
+        $token: authorization,
+    });
+
+    return token ? true : false;
+}
+
+async function checkAuthorizationMiddleware(req: Request, res: Response, next: NextFunction) {
+    const token = req.headers.authorization;
+    if (!token) {
+        res.status(401).json({
+            message: ErrorMessage.ACCESS_TOKEN_NOT_FOUND,
+        });
+    }
+
+    const authorized = await checkAuthorization(token);
+
+    if (!authorized) {
+        res.status(401).json({
+            message: ErrorMessage.INVALID_ACCESS_TOKEN,
+        });
+    }
+
+    next();
+}
 
 @Controller('resources')
 export class ResourceController {
-
-    // Do it with middleware
-    private async checkAuthorization(authorization: string | undefined): Promise<boolean> {
-        if (!authorization) {
-            return false;
-        } else {
-            const token = await Database.get<Token>('SELECT * from tokens where value = $token and created_ts >= Datetime(\'now\', \'-2 days\')', {
-                $token: authorization,
-            });
-
-            return !!token;
-        }
-    }
-
     private checkResourceData(data: Dictionary<number | string> | undefined): boolean {
         if (!data) {
-            return true;
+            return false;
         }
         return (Object.keys(data).length <= 10 && Object.values(data).map((v) => {
             return isNumber(v) || isString(v);
@@ -38,16 +52,9 @@ export class ResourceController {
     }
 
     @Get(':id')
+    @Middleware(checkAuthorizationMiddleware)
     private async get(req: Request, res: Response) {
         try {
-            const authorized = await this.checkAuthorization(req.headers.authorization);
-
-            if (!authorized) {
-                res.status(401).json({
-                    message: 'User is not allowed to perform this action',
-                });
-            }
-
             const resource = await Database.get<Resource>(
                 'SELECT * from resources WHERE id = $id',
                 { $id: req.params.id },
@@ -55,7 +62,7 @@ export class ResourceController {
 
             if (!resource) {
                 res.status(404).json({
-                    message: 'Resource not found',
+                    message: ErrorMessage.ENTITY_NOT_FOUND,
                 });
             } else {
                 res.status(200).json({
@@ -81,17 +88,9 @@ export class ResourceController {
     }
 
     @Get('')
+    @Middleware(checkAuthorizationMiddleware)
     private async getAll(req: Request, res: Response) {
         try {
-            const authorized = await this.checkAuthorization(req.headers.authorization);
-
-            if (!authorized) {
-                res.status(401).json({
-                    status: 401,
-                    message: 'User is not allowed to perform this action',
-                });
-            }
-
             // Warning. This should be paginated. Ok for the scope of the exercise
             const results = await Database.all<Resource>(
                 'SELECT * from resources', {},
@@ -121,17 +120,9 @@ export class ResourceController {
     }
 
     @Post('')
+    @Middleware(checkAuthorizationMiddleware)
     private async createResource(req: Request, res: Response) {
         try {
-            const authorized = await this.checkAuthorization(req.headers.authorization);
-
-            if (!authorized) {
-                res.status(401).json({
-                    status: 401,
-                    message: 'User is not allowed to perform this action',
-                });
-            }
-
             const newResource = req.body as Resource;
             const now = new Date();
             const id = newResource.id ? newResource.id : cuid();
@@ -184,17 +175,9 @@ export class ResourceController {
     }
 
     @Put(':id')
+    @Middleware(checkAuthorizationMiddleware)
     private async updateResource(req: Request, res: Response) {
         try {
-            const authorized = await this.checkAuthorization(req.headers.authorization);
-
-            if (!authorized) {
-                res.status(401).json({
-                    status: 401,
-                    message: 'User is not allowed to perform this action',
-                });
-            }
-
             const updateData = (req.body as Resource);
 
             const resource = await Database.get<Resource>(
@@ -205,14 +188,14 @@ export class ResourceController {
             if (!resource) {
                 res.status(404).json({
                     status: 404,
-                    message: `No resource with id ${req.params.id} was found`,
+                    message: ErrorMessage.ENTITY_NOT_FOUND,
                 });
             }
 
             if ((resource as Resource).deleted_ts) {
                 res.status(400).json({
                     status: 404,
-                    message: `Can't update deleted resource`,
+                    message: ErrorMessage.RESOURCE_DELETED,
                 });
             }
 
@@ -267,17 +250,9 @@ export class ResourceController {
     }
 
     @Delete(':id')
+    @Middleware(checkAuthorizationMiddleware)
     private async delete(req: Request, res: Response) {
         try {
-            const authorized = await this.checkAuthorization(req.headers.authorization);
-
-            if (!authorized) {
-                res.status(401).json({
-                    status: 401,
-                    message: 'User is not allowed to perform this action',
-                });
-            }
-
             const resource = await Database.get<Resource>(
                 'SELECT * from resources WHERE id = $id',
                 { $id: req.params.id },

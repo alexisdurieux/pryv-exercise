@@ -16,6 +16,7 @@
     "@overnightjs/logger": "^1.1.10",
     "@types/chai": "^4.2.7",
     "@types/cuid": "^1.3.0",
+    "@types/knex": "^0.16.1",
     "@types/lodash": "^4.14.149",
     "@types/mocha": "^5.2.7",
     "@types/sha1": "^1.1.2",
@@ -27,6 +28,7 @@
     "db-migrate-sqlite3": "^0.4.0",
     "express": "^4.17.1",
     "help": "^3.0.2",
+    "knex": "^0.20.8",
     "node-fetch": "^2.6.0",
     "sha1": "^1.1.1",
     "sqlite3": "^4.1.1"

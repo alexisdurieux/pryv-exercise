@@ -17,10 +17,9 @@ export class UserController {
                 $password_digest: sha1(userCreation.password),
             });
 
-            const user = await Database.get<UserPublicResource>('SELECT * FROM users WHERE username=$username AND password_digest=$password_digest', {
-                $username: userCreation.username,
-                $password_digest: sha1(userCreation.password),
-            });
+            const user = await Database.getUser(
+                userCreation.username,
+                sha1(userCreation.password));
 
             res.status(200).json({
                 data: {

@@ -6,6 +6,7 @@ import Database from '../Database';
 import sha1 from 'sha1';
 import cuid from 'cuid';
 import { UserPublicResource, User } from 'src/models';
+import { ErrorMessage } from '../ErrorMessage';
 
 @Controller('auth')
 export class LoginController {
@@ -14,14 +15,17 @@ export class LoginController {
         try {
             const loginResource: LoginResource = req.body;
 
-            const user = await Database.get<UserPublicResource>('SELECT * from users where username = $username AND password_digest= $password_digest', {
-                $username : loginResource.username,
-                $password_digest: sha1(loginResource.password),
-            });
+            const user = await Database.getUser(
+                loginResource.username,
+                sha1(loginResource.password),
+            );
+
+            // tslint:disable-next-line:no-console
+            console.log(loginResource, user);
 
             if (!user) {
                 res.status(400).json({
-                    message: 'User not found',
+                    message: ErrorMessage.ENTITY_NOT_FOUND,
                 });
             }
 
