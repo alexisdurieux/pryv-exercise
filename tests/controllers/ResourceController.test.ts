@@ -8,17 +8,29 @@ import { Resource } from '../../src/models/Resource';
 
 chai.should();
 
-async function setupDb() {
-    await Database.run('CREATE TABLE users(username VARCHAR(50) PRIMARY KEY,password_digest VARCHAR(40) NOT NULL,created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,token VARCHAR(40),token_created_ts TIMESTAMP)', {});
-    await Database.run('CREATE table tokens(value VARCHAR(40) NOT NULL PRIMARY KEY,created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP)', {});
-    await Database.run('CREATE TABLE resources(id VARCHAR(40) PRIMARY KEY,data TEXT,created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP,modified_ts TIMESTAMP,deleted_ts TIMESTAMP)', {});
-}
-
 let token: string;
 
 describe('resource', () => {
     before(async () => {
-        await setupDb();
+        await Database.getInstanceDb().schema.createTable('users', (table) => {
+            table.string('username', 50).primary();
+            table.string('password_digest', 40).notNullable();
+            table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
+        });
+
+        await Database.getInstanceDb().schema.createTable('tokens', (table) => {
+            table.string('value', 40).primary();
+            table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
+        });
+
+        await Database.getInstanceDb().schema.createTable('resources', (table) => {
+            table.string('id', 40).primary();
+            table.text('data');
+            table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
+            table.timestamp('modified_ts');
+            table.timestamp('deleted_ts');
+        });
+
         await request(app).post('/users').send({
             username: 'alexis',
             password: 'toto',
@@ -37,9 +49,9 @@ describe('resource', () => {
         });
     });
     after(async () => {
-        await Database.run('DROP Table resources', {});
-        await Database.run('DROP Table tokens', {});
-        await Database.run('DROP Table users', {});
+        await Database.getInstanceDb().schema.dropTable('tokens');
+        await Database.getInstanceDb().schema.dropTable('users');
+        await Database.getInstanceDb().schema.dropTable('resources');
 
         app.close();
     });
@@ -57,9 +69,9 @@ describe('resource', () => {
                 })
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .then((response) => {
-                    resource = response.body.data;
+                    resource = response.body.resource;
                     // tslint:disable-next-line:max-line-length
-                    assert(JSON.stringify(response.body.data.data) === JSON.stringify({ hey: 'you', comfortably: 'numb'}), 'create test');
+                    assert(JSON.stringify(response.body.resource.data) === JSON.stringify({ hey: 'you', comfortably: 'numb'}), 'create test');
                 });
         });
 
@@ -68,7 +80,7 @@ describe('resource', () => {
                 .get(`/resources/${resource.id}`)
                 .set('authorization', token)
                 .expect('Content-Type', 'application/json; charset=utf-8')
-                .expect(200, { status: 200, data: resource }, done);
+                .expect(200, { status: 200, resource }, done);
         });
 
         it('update resource', async () => {
@@ -83,9 +95,11 @@ describe('resource', () => {
                 })
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .then((response) => {
-                    resource = response.body.data;
-                    // tslint:disable-next-line:max-line-length
-                    assert(JSON.stringify(response.body.data.data) === JSON.stringify({ hey: '2', comfortably: 3}), 'update test');
+                    resource = response.body.resource;
+                    assert(
+                        JSON.stringify(response.body.resource.data) ===
+                        JSON.stringify({ hey: '2', comfortably: 3}),
+                        'update test');
                 });
         });
 
@@ -96,8 +110,7 @@ describe('resource', () => {
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .then((response) => {
                     resource = response.body.data;
-                    // tslint:disable-next-line:max-line-length
-                    assert(response.body.data.data === null, 'delete test');
+                    assert(JSON.stringify(response.body) === JSON.stringify({ status: 200 }), 'delete test');
                 });
         });
     });

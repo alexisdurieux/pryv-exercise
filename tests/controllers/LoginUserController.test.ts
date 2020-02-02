@@ -7,18 +7,23 @@ import { assert } from 'chai';
 
 chai.should();
 
-async function setupDb() {
-    await Database.run('CREATE TABLE users(username VARCHAR(50) PRIMARY KEY,password_digest VARCHAR(40) NOT NULL,created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,token VARCHAR(40),token_created_ts TIMESTAMP)', {});
-    await Database.run('CREATE table tokens(value VARCHAR(40) NOT NULL PRIMARY KEY,created_ts TIMESTAMP DEFAULT CURRENT_TIMESTAMP)', {});
-}
-
 describe('auth', () => {
     before(async () => {
-        await setupDb();
+        await Database.getInstanceDb().schema.createTable('users', (table) => {
+            table.string('username', 50).primary();
+            table.string('password_digest', 40).notNullable();
+            table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
+        });
+
+        await Database.getInstanceDb().schema.createTable('tokens', (table) => {
+            table.string('value', 40).primary();
+            table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
+        });
     });
     after(async () => {
-        await Database.run('DROP Table tokens', {});
-        await Database.run('DROP Table users', {});
+        await Database.getInstanceDb().schema.dropTable('tokens');
+        await Database.getInstanceDb().schema.dropTable('users');
+
         app.close();
     });
     describe('POST /login', () => {
@@ -28,7 +33,7 @@ describe('auth', () => {
                 password: 'toto',
             })
             .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(400, { message: 'User not found' }, done);
+            .expect(400, { message: 'Entity Not found' }, done);
         });
 
         it('should return a token if an account exists', async () => {
