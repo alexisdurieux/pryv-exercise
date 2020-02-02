@@ -5,3 +5,4 @@ export * from './Dictionnary';
 export * from './ErrorResponse';
 export * from './LoginResource';
 export * from './User';
+export * from './Token';

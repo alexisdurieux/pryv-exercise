@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { Controller, Post } from '@overnightjs/core';
 import { Logger } from '@overnightjs/logger';
 import { LoginResource } from 'src/models/LoginResource';
-import Database from '../Database';
 import sha1 from 'sha1';
 import cuid from 'cuid';
-import { UserPublicResource, User } from 'src/models';
+import { TokenModel } from '../models/Token';
 import { ErrorMessage } from '../ErrorMessage';
+import { UserModel } from '../models/User';
 
 @Controller('auth')
 export class LoginController {
@@ -15,13 +15,10 @@ export class LoginController {
         try {
             const loginResource: LoginResource = req.body;
 
-            const user = await Database.getUser(
+            const user = await UserModel.getUser(
                 loginResource.username,
                 sha1(loginResource.password),
             );
-
-            // tslint:disable-next-line:no-console
-            console.log(loginResource, user);
 
             if (!user) {
                 res.status(400).json({
@@ -31,9 +28,7 @@ export class LoginController {
 
             const newToken = cuid();
 
-            await Database.run('INSERT INTO tokens (value) VALUES ($token)', {
-                $token: newToken,
-            });
+            await TokenModel.createToken(newToken);
 
             res.status(200).json({
                 data: {
