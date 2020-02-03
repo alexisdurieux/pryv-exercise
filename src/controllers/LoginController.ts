@@ -21,7 +21,7 @@ export class LoginController {
             );
 
             if (!user) {
-                res.status(400).json({
+                return res.status(400).json({
                     message: ErrorMessage.ENTITY_NOT_FOUND,
                 });
             }
@@ -30,7 +30,7 @@ export class LoginController {
 
             await TokenModel.createToken(newToken);
 
-            res.status(200).json({
+            return res.status(200).json({
                 data: {
                     token: newToken,
                 },

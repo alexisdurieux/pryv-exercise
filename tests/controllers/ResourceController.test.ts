@@ -55,8 +55,8 @@ describe('resource', () => {
 
         app.close();
     });
+    let resource: Resource;
     describe('POST /resources', () => {
-        let resource: Resource;
         it('create resource', async () => {
             await request(app)
                 .post('/resources')
@@ -70,20 +70,64 @@ describe('resource', () => {
                 .expect('Content-Type', 'application/json; charset=utf-8')
                 .then((response) => {
                     resource = response.body.resource;
-                    // tslint:disable-next-line:max-line-length
-                    assert(JSON.stringify(response.body.resource.data) === JSON.stringify({ hey: 'you', comfortably: 'numb'}), 'create test');
+                    assert(JSON.stringify(response.body.resource.data) === JSON.stringify({ hey: 'you', comfortably: 'numb'}), 'create resource');
                 });
         });
 
-        it('get resource by id', (done) => {
-            request(app)
+        it('create resource with existing id should fail', async () => {
+            await request(app)
+                .post('/resources')
+                .set('authorization', token)
+                .send({
+                    data: {
+                        hey: 'you',
+                        comfortably: 'numb',
+                    },
+                    id: resource.id,
+                })
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(400);
+        });
+    });
+
+    describe('GET /resources/:id', () => {
+        it('get resource by id work', async () => {
+            await request(app)
                 .get(`/resources/${resource.id}`)
                 .set('authorization', token)
                 .expect('Content-Type', 'application/json; charset=utf-8')
-                .expect(200, { status: 200, resource }, done);
+                .expect(200, { status: 200, resource });
         });
 
-        it('update resource', async () => {
+        it('get resource with invalid id should return a 404', async () => {
+            await request(app)
+                .get(`/resources/invalid_id`)
+                .set('authorization', token)
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(404, { message: 'Entity Not found'});
+        });
+    });
+
+    describe('GET /resources', () => {
+        it('get all resources should work', async () => {
+            await request(app)
+                .get(`/resources`)
+                .set('authorization', token)
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(200, { status: 200, resources: [resource] });
+        });
+
+        it('get all resources with an invalid token shouldn\'t work', async () => {
+            await request(app)
+                .get(`/resources`)
+                .set('authorization', 'invalid token')
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(401, { message: 'Invalid access token'});
+        });
+    });
+
+    describe('UPDATE /resources/:id', () => {
+        it('update a resource id should work', async () => {
             await request(app)
                 .put(`/resources/${resource.id}`)
                 .set('authorization', token)
@@ -99,19 +143,37 @@ describe('resource', () => {
                     assert(
                         JSON.stringify(response.body.resource.data) ===
                         JSON.stringify({ hey: '2', comfortably: 3}),
-                        'update test');
+                        'update resource test');
                 });
         });
 
-        it('delete resource', async () => {
+        it('undefined data field should return an error', async () => {
+            await request(app)
+                .put(`/resources/${resource.id}`)
+                .set('authorization', token)
+                .send({
+                    data: null,
+                })
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(400, { status: 400, message: 'Bad input data. Data is undefined or too many fields or non string/integer values'});
+        });
+    });
+
+    describe('DELETE /resources/:id', () => {
+        it('delete a resource with an unknown id should return a 404', async () => {
+            await request(app)
+                .delete(`/resources/invalid id`)
+                .set('authorization', token)
+                .expect('Content-Type', 'application/json; charset=utf-8')
+                .expect(404, { message: 'Entity Not found'});
+        });
+
+        it('delete a resource should set data to null', async () => {
             await request(app)
                 .delete(`/resources/${resource.id}`)
                 .set('authorization', token)
                 .expect('Content-Type', 'application/json; charset=utf-8')
-                .then((response) => {
-                    resource = response.body.data;
-                    assert(JSON.stringify(response.body) === JSON.stringify({ status: 200 }), 'delete test');
-                });
+                .expect(200, { status: 200 });
         });
     });
 });

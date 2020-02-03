@@ -4,4 +4,5 @@ export enum ErrorMessage {
     INVALID_ACCESS_TOKEN = 'Invalid access token',
     ACCESS_TOKEN_NOT_FOUND = 'Access token not found',
     RESOURCE_DELETED = 'Resource deleted',
+    INVALID_DATA = 'Bad input data. Data is undefined or too many fields or non string/integer values',
 }

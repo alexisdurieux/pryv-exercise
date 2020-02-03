@@ -22,7 +22,7 @@ async function checkAuthorization(authorization: string | undefined): Promise<bo
 
 async function resourceExists(req: Request, res: Response, next: NextFunction) {
     if (!req.params.id) {
-        res.status(404).json({
+        return res.status(404).json({
             message: ErrorMessage.ENTITY_NOT_FOUND,
         });
     }
@@ -30,7 +30,7 @@ async function resourceExists(req: Request, res: Response, next: NextFunction) {
     const resource = await ResourceModel.getModel(req.params.id);
 
     if (!resource) {
-        res.status(404).json({
+        return res.status(404).json({
             message: ErrorMessage.ENTITY_NOT_FOUND,
         });
     } else {
@@ -41,7 +41,7 @@ async function resourceExists(req: Request, res: Response, next: NextFunction) {
 async function checkAuthorizationMiddleware(req: Request, res: Response, next: NextFunction) {
     const token = req.headers.authorization;
     if (!token) {
-        res.status(401).json({
+        return res.status(401).json({
             message: ErrorMessage.ACCESS_TOKEN_NOT_FOUND,
         });
     }
@@ -49,7 +49,7 @@ async function checkAuthorizationMiddleware(req: Request, res: Response, next: N
     const authorized = await checkAuthorization(token);
 
     if (!authorized) {
-        res.status(401).json({
+        return res.status(401).json({
             message: ErrorMessage.INVALID_ACCESS_TOKEN,
         });
     }
@@ -75,7 +75,7 @@ export class ResourceController {
             const resourceOrUndefined = await ResourceModel.getModel(req.params.id);
             const resource = resourceOrUndefined as Resource;
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 200,
                 resource: {
                     id: resource.id as string,
@@ -103,7 +103,7 @@ export class ResourceController {
             // Warning. This should be paginated. Ok for the scope of the exercise
             const results = await ResourceModel.getModels();
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 200,
                 resources: results.map((resource) => {
                     return {
@@ -150,7 +150,7 @@ export class ResourceController {
 
                 const r = createdResource as Resource;
 
-                res.status(200).json({
+                return res.status(200).json({
                     status: 200,
                     resource: {
                         id: r.id as string,
@@ -163,9 +163,9 @@ export class ResourceController {
                     },
                 });
             } else {
-                res.status(400).json({
+                return res.status(400).json({
                     status: 400,
-                    message: 'Bad input data. Too many fields or non string/integer values',
+                    message: 'Bad input data. Data is undefined or too many fields or non string/integer values',
                 });
             }
         } catch (error) {
@@ -187,7 +187,7 @@ export class ResourceController {
             const resource = resourceOrUndefined as Resource;
 
             if ((resource as Resource).deleted_ts) {
-                res.status(400).json({
+                return res.status(400).json({
                     status: 404,
                     message: ErrorMessage.RESOURCE_DELETED,
                 });
@@ -203,7 +203,7 @@ export class ResourceController {
 
                 const r = updatedResource as Resource;
 
-                res.status(200).json({
+                return res.status(200).json({
                     status: 200,
                     resource: {
                         id: r.id as string,
@@ -216,9 +216,9 @@ export class ResourceController {
                     },
                 });
             } else {
-                res.status(400).json({
+                return res.status(400).json({
                     status: 400,
-                    message: 'Bad input data. Too many fields or non string/integer values',
+                    message: ErrorMessage.INVALID_DATA,
                 });
             }
 
@@ -239,7 +239,7 @@ export class ResourceController {
         try {
             await ResourceModel.deleteModel(req.params.id);
 
-            res.status(200).json({
+            return res.status(200).json({
                 status: 200,
             });
         } catch (error) {

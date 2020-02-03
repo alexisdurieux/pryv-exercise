@@ -19,6 +19,11 @@ describe('auth', () => {
             table.string('value', 40).primary();
             table.timestamp('created_ts').notNullable().defaultTo(Database.db.fn.now());
         });
+
+        await request(app).post('/users').send({
+            username: 'alexis',
+            password: 'thisisapassword',
+        });
     });
     after(async () => {
         await Database.getInstanceDb().schema.dropTable('tokens');
@@ -26,8 +31,8 @@ describe('auth', () => {
 
         app.close();
     });
-    describe('POST /login', () => {
-        it('should not login correctly if no account', (done) => {
+    describe('POST /auth/login', () => {
+        it('should not login correctly if wrong password', (done) => {
             request(app).post('/auth/login').send({
                 username: 'alexis',
                 password: 'toto',
@@ -36,17 +41,10 @@ describe('auth', () => {
             .expect(400, { message: 'Entity Not found' }, done);
         });
 
-        it('should return a token if an account exists', async () => {
-            await request(app).post('/users').send({
-                username: 'alexis',
-                password: 'toto',
-            })
-            .expect('Content-Type', 'application/json; charset=utf-8')
-            .expect(200);
-
+        it('should return a token if login is ok', async () => {
             await request(app).post('/auth/login').send({
                 username: 'alexis',
-                password: 'toto',
+                password: 'thisisapassword',
             })
             .expect('Content-Type', 'application/json; charset=utf-8')
             .expect(200)
